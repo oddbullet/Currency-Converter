@@ -5,6 +5,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -13,6 +14,8 @@ import javax.swing.JButton;
 import javax.swing.JTextField;
 import javax.swing.JComboBox;
 import java.awt.event.ActionListener;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -187,7 +190,7 @@ public class MainFram extends JFrame {
 			"Zambian Kwacha",
 			"Zimbabwean Dollar"
 	};
-	
+	private static String[] CURRENCIES2 = new String[162];
 	private static Map<String, String> apprev = new HashMap<String, String>();
 	
 	
@@ -196,15 +199,29 @@ public class MainFram extends JFrame {
 	private JPanel contentPane;
 	private JTextField textCurrency1;
 	private JTextField textCurrency2;
-	
+
 	private JComboBox<String> baseBox;
 	private JComboBox<String> targetBox;
-	
-	public static void setMap() {
-		apprev.put("Euro", "EUR");
-		apprev.put("United States Dollar", "USD");
-	}
 
+	public static void getCode() throws FileNotFoundException {
+		FileReader file = new FileReader("codes.json");
+		JsonElement root = JsonParser.parseReader(file);
+		JsonObject jsonobj = root.getAsJsonObject();
+		
+		// Accessing object
+		JsonArray codes = jsonobj.getAsJsonArray("supported_codes");
+		
+		for(int i = 0; i < codes.size(); i++) {
+			JsonArray innerArray = codes.get(i).getAsJsonArray();
+			String key = innerArray.get(1).getAsString();
+			String val = innerArray.get(0).getAsString();
+			CURRENCIES2[i] = key;
+			apprev.put(key, val);
+		}
+		
+		System.out.println(CURRENCIES2.length);
+		
+	}
 	/**
 	 * Launch the application.
 	 */
@@ -212,7 +229,7 @@ public class MainFram extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					setMap();
+					getCode();
 					MainFram frame = new MainFram();
 					frame.setVisible(true);
 				} catch (Exception e) {
@@ -240,7 +257,8 @@ public class MainFram extends JFrame {
 		contentPane.add(textCurrency1);
 		textCurrency1.setColumns(10);
 		
-		baseBox = new JComboBox<String>(CURRENCIES);
+		
+		baseBox = new JComboBox<String>(CURRENCIES2);
 		baseBox.setBounds(147, 96, 82, 27);
 		contentPane.add(baseBox);
 		
@@ -250,7 +268,7 @@ public class MainFram extends JFrame {
 		contentPane.add(textCurrency2);
 		textCurrency2.setColumns(10);
 		
-		targetBox = new JComboBox<String>(CURRENCIES);
+		targetBox = new JComboBox<String>(CURRENCIES2);
 		targetBox.setBounds(362, 96, 82, 27);
 		contentPane.add(targetBox);
 		
